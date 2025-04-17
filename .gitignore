@@ -1,0 +1,13 @@
+# Ne pas versionner l'environnement virtuel
+venv/
+
+# Fichiers Python à ignorer
+__pycache__/
+*.pyc
+
+# Fichiers de log
+*.log
+
+# Docker
+*.env
+*.db

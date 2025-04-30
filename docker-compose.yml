@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+
+  # ---------- USER SERVICE ----------
+  user-service:
+    build: ./user-service
+    ports:
+      - "5001:5001"
+    depends_on:
+      user-db:
+        condition: service_healthy
+    restart: always
+    environment:
+      - DB_HOST=user-db
+      - DB_NAME=users
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+
+  user-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - user_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------- SALLE SERVICE ----------
+  salle-service:
+    build: ./salle-service
+    ports:
+      - "5002:5002"
+    depends_on:
+      salle-db:
+        condition: service_healthy
+    restart: always
+    environment:
+      - DB_HOST=salle-db
+      - DB_NAME=salles
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+
+  salle-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: salles
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - salle_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------- RESERVATION SERVICE ----------
+  reservation-service:
+    build: ./reservation-service
+    ports:
+      - "5003:5003"
+    depends_on:
+      reservation-db:
+        condition: service_healthy
+    restart: always
+    environment:
+      - DB_HOST=reservation-db
+      - DB_NAME=reservations
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+
+  reservation-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: reservations
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - reservation_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------- ZOOKEEPER ----------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  # ---------- KAFKA ----------
+  kafka:
+    image: confluentinc/cp-kafka:7.4.1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+# ---------- VOLUMES ----------
+volumes:
+  user_data:
+  salle_data:
+  reservation_data:
+

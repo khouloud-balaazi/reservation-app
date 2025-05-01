@@ -68,9 +68,14 @@ def login():
 
 @app.route('/login/callback')
 def authorized():
+    # Vérifie si "code" est bien dans les arguments de la requête
+    if 'code' not in request.args:
+        return jsonify({"error": "Missing authorization code"}), 400
+
     token = google.authorize_access_token()
     if token is None:
         return jsonify({"error": "Authorization failed"}), 400
+
     user_info = google.get('userinfo').json()
 
     role = "Admin" if user_info['email'] == 'balaazikhouloud@gmail.com' else "Employe"

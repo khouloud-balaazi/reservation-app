@@ -1,0 +1,6 @@
+flask
+psycopg2-binary
+Authlib==1.2.1
+python-dotenv
+requests
+
